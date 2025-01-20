@@ -1,0 +1,1 @@
+Following this [linkedin course](https://www.linkedin.com/learning/rust-essential-training) on rust.  
