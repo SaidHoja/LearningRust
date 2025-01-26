@@ -1,8 +1,7 @@
-mod challenges;
-use challenges::chal_three;
+
 
 fn main() {
-    chal_three()
+
 }
 
 /*
@@ -240,3 +239,96 @@ Chapter 2
 
 
   */
+
+  /*
+  Chapter 6 ownership
+
+      var scope is pretty much the same, basically just inside the same braces.
+      Scope is used to 
+
+      Shadowing
+      Declaring a variable with the same name as an existing one
+
+        let x = 5;
+        print!("{x}")
+        let x = 7;
+        print!("{x}")
+        This is perfectly legal and will rust in 5 then 7 being printed
+
+        but this is illegal
+
+        let x = 5;
+        print!("{x}")
+        x = 7; // because x is not mut
+        print!("{x}")
+        Can also change the data type and everything else as it is a new variable, seems like bad practice to do this
+    Doesn't modify it actually creates a new variable with the same name, the second will be used till it leaves scope.
+
+    Memory 
+    Stack and heap system similar to C
+
+    Strings are heap allocated
+    Strings are mutalble
+    String::from("hello") creates a heap allocated string
+    others like 
+    let s = "ASDA" are literals so differently allocated
+
+    let mut messages = String::from("Hello");
+    messages.push_str(", world!"); //
+    messages.push('!'); // can push a single character
+
+    Ownership
+
+    Rust values can only have one owner at a time
+    When the owner goes out of scope the value is dropped, unless it is moved to another owner
+    techniques to move ownership/values
+        Moving
+        for example
+
+        let x : String;
+        {
+            let y = "sadf";
+            x = y;
+            print!("{y}") // this will error as y is no longer in scope as its ownership has been moved to x
+        }
+        // ints and things of that nature are copied (stack allocated variables), but heap allocated things are moved
+
+        Cloning
+               let x : String;
+        {
+            let y = "sadf";
+            x = y.clone();
+            print!("{y}") // this is now fine as the data is cloned and x and y own two seperate copies
+        }
+
+        Passing ownership to different functions
+
+        fn main() {
+            let x = String::from("hello");
+            take_ownership(x);
+            println!("{}", x); // this will error as x has been moved to the function
+        }
+
+        fn take_ownership(s: String){
+            println!("{}", s);
+        }
+
+        can use clone again to easily due this. or you can return the value from the function
+
+        fn main() {
+            let x = String::from("hello");
+            let x = take_ownership(x);
+            println!("{}", x); 
+        }
+
+        fn take_ownership(s: String) -> String{
+            println!("{}", s);
+            s // this does not have to be the same string that was passed in.
+        }
+
+        Seems like the rules of ownership follow this for functions:
+
+        Any heap allocated variable passed in is transfer ownership to the intake function
+        any variable returned from a function is transfered to the calling function
+
+   */
