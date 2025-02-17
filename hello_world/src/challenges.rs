@@ -44,3 +44,28 @@ pub fn chal_three(){
     assert_eq!(mean, 12.5);
     println!("test 3 passed");
 }
+
+pub fn chal_four_trim_spaces( var : & str) -> &str{
+    let mut start: usize = 0;
+    let mut end = 0;
+    let mut word = false;
+    for (item, value) in var.chars().enumerate(){
+        if (value == ' ' ){
+            start += 1;
+        }
+        else{
+            break;
+        }
+    }
+    
+    for (item, value) in var.chars().rev().enumerate(){
+        if (value == ' ' ){
+            end += 1;
+        }
+        else{
+            break;
+        }
+    }
+    return &var[start..var.len()-end];
+
+}

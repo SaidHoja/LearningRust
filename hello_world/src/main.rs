@@ -1,7 +1,11 @@
-
+mod challenges;
+use challenges::chal_four_trim_spaces;
 
 fn main() {
+    let x = String::from("  asdf ");
+    let y = chal_four_trim_spaces(&x);
 
+    assert_eq!(y, "asdf");
 }
 
 /*
@@ -330,5 +334,74 @@ Chapter 2
 
         Any heap allocated variable passed in is transfer ownership to the intake function
         any variable returned from a function is transfered to the calling function
+
+   */
+
+  /*
+  Chapter 7 borrowing
+
+  Borrowing can be achieved by passing references through the use of & to objects instead of the value
+
+  fn main(){
+        let x = String::from("brw");
+        let x = borrow(&x);
+        println!(x)
+  }
+  
+  fn borrow(x: &string) -> usize{
+        x.len();
+  }
+
+  This now borrows x and thus does not have to return it to send back its ownership
+
+  borrowing but mutable
+    fn main(){
+        let mut x = String::from("brw");
+        let y = borrow(&mut x);
+        println!(x)
+  }
+  
+  fn borrow( x:  &mut string) -> usize{
+        x.push_str(" sadfasdfa")
+        x.len();
+  }
+
+  When using a mutable reference, you can only create one reference to it in that scope. 
+    Prevents race conditions in threaded scenarios
+    &mut var + &var, not allowed because one is multiple. Reading race condition
+  
+
+  dangling references
+
+  fn main(){
+    let x = make_ref();
+    println!(x);
+  }  
+  
+  fn make_ref() -> &String {
+    let new_str = String::from("asdf");
+    &new_str
+  }
+    wont work because as soon as the reference to new_str is returned it goes out of scope so the println has no var to print. Use after free error, not allowed.
+    Best to just return new_str the var, not the reference.
+
+
+    Slices
+    can slice parts of a string and use them when borrowed
+
+    let x = String::from("one two");
+    let y = &x[3..] // takes two
+    those indexes are by byte and not by character so keep in mind special characters like emojis will take up multiple bytes
+    can't index past end without crashing
+    can also slice sarrays
+
+    let x = [1,23,4,56];
+    let y : &[i32] = &x[2..];
+    without borrow won't compile as array sizes must be known at compile time, same for string slices.
+
+    btw &String is a string, and str is a slice
+    slices as function parameters
+
+    &String can act as &str but &str cant act as a &String because &String contains capacity data. 
 
    */
