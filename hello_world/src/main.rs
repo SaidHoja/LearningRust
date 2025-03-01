@@ -1,11 +1,11 @@
 mod challenges;
-use challenges::chal_four_trim_spaces;
+use challenges::chal_seven_rectangle;
+// use std::fs;
+// use std::env;
 
-fn main() {
-    let x = String::from("  asdf ");
-    let y = chal_four_trim_spaces(&x);
 
-    assert_eq!(y, "asdf");
+fn main(){
+
 }
 
 /*
@@ -405,3 +405,262 @@ Chapter 2
     &String can act as &str but &str cant act as a &String because &String contains capacity data. 
 
    */
+
+  /* Chapter 8 standard library and modules
+  
+    Pretty simple, very close to C++ 
+    use std::io;
+
+    fn main(){
+        io::stdin().read_line(&mut someString);
+    }
+  
+    for other modules (crates)
+    go to cargo.toml and add
+    crate_name = "version number"
+    under the dependencies thing.
+   */
+
+  /* Chapter 9 Input and output
+
+    Command line arguments
+        use args function
+        returns an iterator over arguments 
+        first arg usually file
+
+    example:
+    use std::env
+    fn main(){
+        for (index, argument) in end::args().enumerate(){
+        println!("{argument}, {index}")}
+    }
+
+    getting a specific arg.
+    use nth method
+
+    let arg2 = env::args().nth(2).unwrap(); (0 indexed, so 2nd arg is actually 3rd)
+    
+    if there arent 3 args then runtime error.
+    if (env::args().len() <= 2) to check. 
+
+    good example of parsing command line args; doc.rust-lang.org/rust-by-example/std_misc/arg/matching.html
+
+    Reading from files:
+
+    use std::fs;
+
+
+    fn main(){
+        let contents = fs::read_to_string("Cargo.toml").unwrap(); // error handling later
+        println!("contents is {contents}");
+
+    // by line:
+        for line in contents.lines(){
+            println!("{line}");
+        }
+
+    // by character
+        let contents = fs::read("Cargo.toml").unwrap(); // returns a vector of the bytes as a Vec<u8>
+        println!("{contents:?}");
+    }
+
+    use std::path for doing actual file path work. 
+
+    Writing to files
+
+    use std::fs;
+
+    fn main(){
+        let mut text = String::new();
+        text.push("line 1\n");
+        text.push("line 2\n");
+
+        fs::write("text.txt",text); // all in one, can't write in pieces
+    }
+
+    Appending:
+
+    use std::fs;
+    use std::io::Write; // or stdd::io::prelude::*;
+    fn main(){
+
+        let mut file = fs::OpenOptions::new().append("true").open("text2.txt").unwrap();
+        file.Write(b"\nWhatever"); // arg is a Vec<u8> or array of u8s. 
+        
+    }
+
+   */
+
+  /* Chapter 10 Structs
+  
+    Very similar to C/C++
+
+    struct Item {
+        field1: String,
+        field2: i32,
+        field3: f64
+    }
+    fn main(){
+        let x : Item = Item {
+            field1: String::from("field1"),
+            field2: 64,
+            field3: 2.40
+        };
+    }
+    println!("{x.field1");
+
+    mutability is the same, add a mut keyword
+
+    can add 
+    #[derive(Debug)] 
+    before struct definition to get
+    println({:? structname}) to work with debug printing
+
+    Struct data is on the stack unless explicity stated to be on the heap. 
+
+    Struct update syntax
+
+    let x2 = Item {
+        field1 : String::from("x2field").
+        ..x
+    }
+    just copies the rest of the stuff from x.
+
+
+    let x2 = Item {
+        ..x
+    } // cant do this if we continue to use x because x2 has taken ownership of the string in x.field1
+    // want to use clone() if thats desired. use #[derive(Clone)] as well. 
+    
+    Struct subroutines
+    uses fn 
+
+    struct Item {
+        field1: String,
+        field2: i32,
+        field3: f64
+    }
+
+    impl Item {
+        fn get_field1(&self) -> &str { // first argument is always pointer to itself.
+            &self.field1;
+        }
+        fn add_field2(&mut self, add : i32){
+            self.field2 += add;
+        }
+    }
+
+    Associated functions
+    does not have a &self paramater. Can't ref itsself basically
+
+    impl Item {
+        fn new(field1: &str) -> Item{
+            Item {
+                field1 : String::from(field1),
+                field2 : 10,
+                field3 : 64.0
+            }
+        }
+    }
+
+    let mut x = Item::new("asdf");
+
+
+    Tuple structs
+    struct Color (u8,u8,u8);
+    struct Point (u8,u8,u8);
+
+    fn get_x(p : Point) -> u8{
+        p.1
+    }
+
+    fn main(){
+        let red = Color(256,0,0)
+        get_x(red); // fails
+    }
+
+
+    */
+
+    /* Generic types
+
+        Abstract stand-ins for concrete data types or other properties
+        can be used with functions, structs, etc
+        Uses <T>
+
+        struct Rectange<T,U> {
+            width: T,
+            height: T
+        }
+        let x = Rectangle {
+            width: 10,
+            height: 4.3
+        }
+        No runtime cost because compiler will replace.
+
+        can be used for methods
+
+        impl<T,U> Rectangle <T,U> {
+            fn get_width(&self) -> T{
+                &self.width // needs to be an address as we don't know the type yet. Don't want to accidentally transfer ownership.
+            }
+        }
+
+        impl Rectangle <u8, u8> { // for concrete instances of u8s.
+        }
+
+
+        fn get_biggest<T>(a : T, b : T) -> T {
+            if a > b
+                return a;
+            else 
+                return b;
+        } // this will fail as it doesnt know if > is possible
+
+        fn get_biggest<T : std::cmp::PartialOrd>(a : T, b : T) -> T { //in the prelude so can also use PartialOrd
+            if a > b
+                return a;
+            else 
+                return b;
+        } // fixed with traits.
+
+
+        Box data type
+            Smart pointer, has additional functionallity
+            ownership of data it has
+                because of this will de-alloc on out of scope
+
+        example:
+
+        use std::mem;
+
+        Struct Shuttle {
+            name: String,
+            crew_size: u8,
+            propellant: f64
+        }
+
+        fn main() {
+            let vehicle = Shuttle {
+                name: String::from("Atlantis"),
+                crew_size: 7,
+                propellant: 80.0
+            }
+
+            println!("vehicle size on stack: {mem::size_of_val(&vehicle)}"); // gunna be 40 size of str pointer + u8 + f64
+
+            let boxed_vehicle : Box<Shuttle> = Box::new(vehicle) {
+                name: String::from("Atlantis"),
+                crew_size: 7,
+                propellant: 80.0
+            } 
+            // vehicle no longer owns the data
+            println!("boxed_vehicle size on stack: {mem::size_of_val(&boxed_vehicle)}"); // gunna be pointer sized
+            println!("boxed_vehicle size on stack: {mem::size_of_val(&*boxed_vehicle)}"); // gunna be 40 again
+
+            let unboxed : Shuttle = *boxed_vehicle; // data on stack again, ownership passed to unboxed
+
+
+
+        }
+     */

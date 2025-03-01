@@ -1,3 +1,10 @@
+use rand;
+use std::io;
+use std::env;
+use std::fs;
+use std::mem;
+use std::ops::Add;
+
 pub fn chal_one(){
     let a = 13;
     let b = 2.3;
@@ -68,4 +75,83 @@ pub fn chal_four_trim_spaces( var : & str) -> &str{
     }
     return &var[start..var.len()-end];
 
+}
+
+pub fn chal_five_higher_lower(){
+    let random : u32 = rand::random_range(1..101);
+    println!("Enter a number between 1 and 100");
+
+    loop {
+        let mut input = String::new();
+        let _ = io::stdin().read_line(&mut input).expect("Failed to read input line");
+        let mut inputNum : u32 = input.trim().parse().expect("Failed to parse guess");
+
+        if (inputNum < random){
+            println!("\nHigher");
+        }
+        else if (inputNum > random){
+            println!("\nLower");
+        }
+        else {
+            break;
+        }
+    }
+
+
+    println!("Congrats you correctly guessed the number was {random}")
+
+}
+
+pub fn chal_six_check_rost(mut args : env::Args){
+    // first arg is file, second arg is name to be found in the file.
+    if (args.len() < 2){
+        println!("2 arguments are required");
+        return;
+    }
+    let file_name = args.nth(1).unwrap();
+    println!("{file_name}");
+    let name = args.nth(0).unwrap();
+
+    let file_string = fs::read_to_string(file_name).unwrap();
+
+    if (file_string.contains(&name)){
+        println!("{name} is in roster!");
+    }
+    else{
+        println!("{name} is not in roster!");
+    }
+
+}
+
+struct Rectangle {
+    width: f64,
+    height: f64
+}
+
+impl Rectangle {
+    fn get_area(&self) -> f64{
+        self.height * self.width
+    }
+    fn scale(&mut self, scale : f64){
+        self.height = self.height * scale;
+        self.width = self.width * scale;
+    }
+    fn new(height: f64, width: f64) -> Rectangle{
+        Rectangle {
+            height,
+            width
+        }
+    }
+}
+
+pub fn chal_seven_rectangle(){
+    let mut rect = Rectangle::new(1.2, 3.4);
+    assert_eq!(rect.get_area(), 4.08);
+    rect.scale(0.5);
+    assert_eq!(rect.get_area(),1.02);
+    println!("Tests passed!");
+}
+
+pub fn chal_eight_boxes<T: Add<Output = T>>(num1 : Box<T>, num2 : Box<T>) -> Box<T>{
+    Box::new(*num1 + *num2)
 }
