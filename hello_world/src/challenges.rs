@@ -4,6 +4,7 @@ use std::env;
 use std::fs;
 use std::mem;
 use std::ops::Add;
+use std::fmt;
 
 pub fn chal_one(){
     let a = 13;
@@ -55,7 +56,7 @@ pub fn chal_three(){
 pub fn chal_four_trim_spaces( var : & str) -> &str{
     let mut start: usize = 0;
     let mut end = 0;
-    let mut word = false;
+    let word = false;
     for (item, value) in var.chars().enumerate(){
         if (value == ' ' ){
             start += 1;
@@ -84,7 +85,7 @@ pub fn chal_five_higher_lower(){
     loop {
         let mut input = String::new();
         let _ = io::stdin().read_line(&mut input).expect("Failed to read input line");
-        let mut inputNum : u32 = input.trim().parse().expect("Failed to parse guess");
+        let inputNum : u32 = input.trim().parse().expect("Failed to parse guess");
 
         if (inputNum < random){
             println!("\nHigher");
@@ -154,4 +155,47 @@ pub fn chal_seven_rectangle(){
 
 pub fn chal_eight_boxes<T: Add<Output = T>>(num1 : Box<T>, num2 : Box<T>) -> Box<T>{
     Box::new(*num1 + *num2)
+}
+
+impl fmt::Display for Rectangle{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error>{
+        let height = self.height;
+        let width = self.width;
+        write!(f, "height: {height} \t width: {width}")
+    }
+}
+
+pub fn chal_nine_traits(){
+    let rect : Rectangle = Rectangle{
+        width: 2.3,
+        height: 1.3
+    };
+    println!("{rect}");
+
+}
+
+enum Location {
+    Unknown,
+    Anonymous,
+    Known(f64,f64)
+}
+
+impl Location {
+    fn display(&self) -> String{
+        match &self {
+            Location::Unknown => String::from("Location is unknown"),
+            Location::Anonymous => String::from("Tor browser"),
+            Location::Known(lat,long) => format!("{lat} - {long}")
+        }
+    }
+}
+
+pub fn chal_ten_enums(){
+    let a = Location::Unknown;
+    println!("{}", a.display());
+    let b = Location::Anonymous;
+    println!("{}", b.display());
+    let c = Location::Known(10.0, 20.3);
+    println!("{}", c.display());
+
 }

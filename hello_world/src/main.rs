@@ -1,11 +1,10 @@
 mod challenges;
-use challenges::chal_seven_rectangle;
 // use std::fs;
 // use std::env;
 
 
 fn main(){
-
+    challenges::chal_ten_enums();
 }
 
 /*
@@ -663,4 +662,433 @@ Chapter 2
 
 
         }
+     */
+
+    /* Chapter 12 traits
+
+        Very similar to interfaces 
+
+        trait MyToString {
+            fn toString(&self) -> String;
+        }
+
+        impl MyToString for MyStruct {
+            fn toString(&self) -> String{
+                format!("Name : {self.name} \t Field 1: "{field1}")
+            }
+        }
+
+        can also do default impl
+
+        trait MyToString {
+            fn toString(&self) -> String{
+                "Default MyToString"
+            }
+        }
+
+        impl MyToString for MyStruct{
+            // don't have to create a toString func for my struct now, will automatically use the default.
+        }
+
+        can derive some basic traits for structs as well with
+        #[derive(ParitalEq, PartialOrd, Debug)] // theres more but I forgot what they are
+
+        Trait Bounds:
+            General purpose is to stipulate that a certain type contains its given functionality
+
+        example:
+
+        use std::any;
+        use std::fmt;
+
+        fn print_type<T: fmt::Display>(item: T){
+            println!("{:?item} is a {any::type_name::<T>}")
+        }
+
+        fn main(){
+            print_type(13);
+            print_type(13.0);
+            print_type("thirteen");
+            print_type([13]); // this won't work as arrays did not implement trait Display
+        }
+
+        fn print_type<T: fmt::Debug>(item: T){
+            println!("{item} is a {any::type_name::<T>}")
+        }
+
+        fn main(){
+            print_type(13);
+            print_type(13.0);
+            print_type("thirteen");
+            print_type([13]); // this will work as they all impl debug.
+        }
+
+        multiple trait bounds
+        use std::fmt;
+        use std::;
+
+        fm compare_and_print<T: fmt::Display + PartialEq + From<U>, U: fmt::Display + PartialEq + Copy>(a : T, b: U){
+            if a == T::from(b){ // need U to have copy Trait as ownership gets passed by this T::from(b) call
+                println!("{a} is equal to {b}");
+            }
+            else {
+                println!("{a} is not equal to {b}")
+            }
+        }
+
+        can also do this for easier reading. 
+        fm compare_and_print<T , U>(a : T, b: U){
+            where T: fmt::Display + PartialEq + From<U>,
+                U: fmt::Display + PartialEq + Copy
+            if a == T::from(b){
+                println!("{a} is equal to {b}");
+            }
+            else {
+                println!("{a} is not equal to {b}")
+            }
+        }
+
+
+        Traits on returns
+
+        use std::fmt;
+
+        fn get_displayable(choice: bool){} -> impl fmt::Display{
+            if (choice){
+                13
+            }
+            else {
+                "13"
+            }
+        }
+
+        fn main(){
+            println!("{get_displayable}") // this won't work as returns must be the same. Compiler can't do it because it wants to replace with concrete impl.
+        }
+
+
+     */
+
+    /*
+    Chapter 13, lifetimes
+
+    fn main(){
+        let proppellant;
+        {
+            let rp1 = String::from("RP-1");
+            propellant = &rp1; // borrowing rp1 here
+            println!("propellant is {propellant}");
+        }
+        println!("propellant is {propellant}"); // this fails because rp1 goes out of scope and was de-alloced
+    }
+
+    fn main(){
+        let proppellant;
+        let rp1 = String::from("RP-1");
+        {
+            propellant = &rp1; // borrowing rp1 here
+            println!("propellant is {propellant}");
+        }
+        println!("propellant is {propellant}"); // this is fine as rp1 is still in scope and lifetime
+    }
+
+
+    Manually defining lifetimes 
+    fn best_fuel( x: &str, y : &str) -> &str {
+        if (x.len() > y.len()){
+            return x;
+        }
+        y;
+    }
+
+    fn main(){
+        let result;
+        let proppellant1 = String::from("RP-12");
+        let propellant2 = String::from("RP-8");
+        result = best_fuel(&propellant1, &propellant2); // best fuel borrows, doesn't take ownership
+        println!("result is {result}"); 
+        // this will fail as the best_Fuel function needs to explicitly state lifetimes of return values.
+    }
+    Help message : this function's return type containts a borrowed value, but the signature does not say whether it is borrowed from x or y    
+
+    fn best_fuel<'a>( x: &'a str, y : &'a str) -> &'a str { // these annotations specify the lifetimes as they relate to one another
+    // so its saying the two input lifetimes are the same as the outputs lifetime, aka lifetime of x == lifetime of y  == lifetime of return
+        if (x.len() > y.len()){
+            return x;
+        }
+        y;
+    }
+
+    fn main(){
+        let result;
+        let proppellant1 = String::from("RP-12");
+        let propellant2 = String::from("RP-1");
+        result = best_fuel(&propellant1, &propellant2); // best fuel borrows, doesn't take ownership
+        println!("result is {result}"); 
+        
+    }    
+
+    fn main(){
+        let result;
+        let proppellant1 = String::from("RP-12");
+        {
+            let propellant2 = String::from("RP-1");
+            result = best_fuel(&propellant1, &propellant2); // best fuel borrows, doesn't take ownership
+        }
+        println!("result is {result}"); 
+        // this will fail as the relative lifetimes of the two inputs are not equivalent
+    }    
+
+
+    Multiple lifetime annotations
+
+    fn best_fuel<'a, 'b>( x: &'a str, y : &'b str) -> &'a str {
+        if (x.len() > y.len()){
+            return x;
+        }
+        x
+    }
+
+    fn main(){
+        let result;
+        let proppellant1 = String::from("RP-12");
+        {
+            let propellant2 = String::from("RP-1");
+            result = best_fuel(&propellant1, &propellant2); // best fuel borrows, doesn't take ownership
+        }
+        println!("result is {result}"); 
+        // this will be fine
+    }
+
+    Lifetime elision rules
+        Each elided lifetime in input position becomes a distinct lifetime parameter.
+
+        If there is exactly one input lifetime position (elided or not), that lifetime is assigned to all elided output lifetimes.
+
+        If there are multiple input lifetime positions, but one of them is &self or &mut self, the lifetime of self is assigned to all elided output lifetimes.
+
+        Otherwise, it is an error to elide an output lifetime.
+
+     Struct lifetime annotations
+
+     struct MyStruct {
+        name: String
+     }
+
+     impl MyStruct {
+        fn func(&self, msg: &str) -> &str {
+            println!("{msg} {name}");
+            self.name
+        }
+     }
+
+     fn main(){
+        let x = MyStrict{
+            name: String::from("Name");
+        }
+        let y = x.func("whatever");
+        println!("y is {y}");
+     } // this is all good because MyStruct uses a String
+
+
+     struct MyStruct {
+        name: &str
+     }
+
+     impl MyStruct {
+        fn func(&self, msg: &str) -> &str {
+            println!("{msg} {name}");
+            self.name
+        }
+     }
+
+     fn main(){
+        let x = MyStrict{
+            name: "Name"
+        }
+        let y = x.func("whatever");
+        println!("y is {y}");
+     } // this will fail because theres no lifetime on name because its a ref. 
+
+
+     struct MyStruct<'a> {
+        name: &'a str
+     }
+
+     impl<'a> MyStruct<'a> {
+        fn func(& self, msg: &str) -> &str {
+            println!("{msg} {name}");
+            self.name
+        }
+     }
+
+     fn main(){
+        let x = MyStrict{
+            name: "Name"
+        }
+        let y = x.func("whatever");
+        println!("y is {y}");
+     } // This will work because we added annotations
+
+
+      trying to return msg from the func will fail because lifetime of Struct and return type don't match in elision rule 3. 
+
+      add &'a self, &'b msg and -> &'b str 
+      and impl <'a, 'b> Struct<'a>
+
+      'static lifetime means that it is always available. String literals are examples of this. 
+      Can be coerced down if required. 
+     */
+
+    /*
+    Chapter 14 enums
+
+    #[derive(Debug)]
+    enum Shape {
+        Rectangle,
+        Triangle,
+        Circle
+    }
+
+    fn main(){
+        let my_shape = Shape::Rectangle;
+        println!("my_shape is {:?my_shape}")
+    }
+
+        #[derive(Debug)]
+    enum Shape {
+        Rectangle(f64,f64),
+        Triangle(f64,f64,f64),
+        Circle(f64)
+    }
+
+    fn main(){
+        let my_shape = Shape::Rectangle(1.2, 3.4);
+        println!("my_shape is {:?my_shape}")
+    }
+
+    enum Command{ // commands for a Draw() functions
+        Clear,
+        DrawLine(f64,f64),
+        DrawShape(Shape)
+    }
+
+    match operator
+    similar to switch statements
+
+    fn main(){
+
+        match my_shape {
+            Shape::Circle(r)
+                => circleFunc(r),
+            Shape::Rectangle(h,w)
+                => rectFunc(h,w),
+            Shape::Triangle(s1,s2,s3)
+                => triFunc(s1,s2,s3)
+        }
+
+
+    }
+    
+    fn main() {
+        let my_number = 1u8;
+
+        let result = match my_number { // all possible scenarios should be covered
+            0 => "zero",
+            1 => "one",
+            // etc
+            _ => { // default case
+                println!("num did not match"); 
+                "something else"
+            } 
+        };
+    }
+
+    Enum methods
+    
+    #[derive(Debug)]
+    enum Shape {
+        Rectangle,
+        Triangle,
+        Circle
+    }
+
+    impl Shape {
+        fn get_perimeter(&self) -> f64 {
+            match &self {
+                Shape::Rectangle => getRectPeri(&self);
+                Shape::Circle => getCirclePeri(&self);
+                // etc
+            }
+
+        }
+    }
+
+    Representing nothing
+        Rust doesn't have null
+    
+    enum Option<T>{
+        Some(T),
+        None
+    } // in prelude
+
+    fn main(){
+        let countdown = [1,2,3]
+        let number = countdown.get(4);
+        // will be None
+        let other = countdown.get(2);
+        // will be Some(3)
+
+        //now can do 
+        let b = number.unwrap_or(&0) + 1;
+
+        // or 
+
+        let number = match number {
+            Some(num) => num + 1,
+            None => 0
+        }
+    }
+
+    If-let syntax
+
+    fn main(){
+        let number = Some(13);
+
+        match number {
+            Some(13) => println!("thirteen"),
+            _ => ()
+        }
+
+        // simpler way to do above
+        if let Some(13) = number {
+            println!("thirteen")
+        }
+    }
+
+     */
+
+    /*
+    Chapter 15 Runtime errors
+    
+    Recoverable vs Unrecoverable errors
+
+    Recoverable:
+        File not found, just returns an error
+        Handled with Result<T,E> enum type
+    Unrecoverable:
+        Indexing beyond bounds of an array, panics
+        Divide by 0
+        handled with panic!
+        terminates immediately
+
+    Result<T,E> enum
+
+    enum REsult<T,E> {
+        Ok<T>,
+        Error<E>
+    } // in prelude
+
+     
+
      */
